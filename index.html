@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配達管理システム</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBPB4pHhZ4YO_zZ38ayZ1CvODJAuTwe8GQ&libraries=places&callback=initMap" async defer></script>
+</head>
+<body>
+    <button onclick="startWatchingLocation()">現在地追跡開始</button>
+    <button onclick="stopWatchingLocation()">追跡停止</button>
+
+    <div class="btn-container">
+        <button onclick="showCurrentLocation()">現在地を表示</button>    
+    <div class="search-container">
+        <input type="text" id="address-input" placeholder="住所を入力して検索">
+    </div>
+    <div id="map"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
