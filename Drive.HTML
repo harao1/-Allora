@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Google Maps ピンにメモ機能</title>
+  <style>
+    #map {
+      height: 90vh;
+      width: 100%;
+    }
+    #address-input {
+      width: 300px;
+      padding: 8px;
+      margin: 10px;
+    }
+    .custom-current-btn {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      padding: 5px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+  <!-- Google Maps API 読み込み（APIキーは適宜差し替えてください） -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBPB4pHhZ4YO_zZ38ayZ1CvODJAuTwe8GQ&callback=initMap" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <input id="address-input" type="text" placeholder="住所を入力してEnterで検索" />
+  <div id="map"></div>
+</body>
+</html>
