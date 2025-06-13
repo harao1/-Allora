@@ -2,132 +2,100 @@ let map;
 let markers = [];
 
 function initMap() {
-    map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 35.6895, lng: 139.6917 },
-        zoom: 12
-    });
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 35.6895, lng: 139.6917 },
+    zoom: 12,
+  });
 
-    showCurrentLocation();
+  console.log("map読み込み")
 
-    map.addListener("dblclick", function (e) {
-        const latLng = e.latLng;
-        const address = `指定位置（${latLng.lat().toFixed(5)}, ${latLng.lng().toFixed(5)}）`;
-        placeMarker(latLng, address);
-    });
-    
-    const input = document.getElementById("address-input");
-
-    // エンターで住所検索
-    input.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            const address = input.value;
-            const geocoder = new google.maps.Geocoder();
-
-            geocoder.geocode({ address: address }, function (results, status) {
-                if (status === "OK") {
-                    const location = results[0].geometry.location;
-                    placeMarker(location, address);
-                } else {
-                    alert("住所が見つかりませんでした: " + status);
-                }
-            });
-        }
-    });
-    addCurrentLocationButton(map);
+  setupAddressSearch();
+  setupMapDoubleClick();
 }
 
-function addCurrentLocationButton(map) {
-    const controlDiv = document.createElement("div");
-    controlDiv.style.margin = "10px";
-
-    // ボタンの中身（スタイルはあとで CSS で整える）
-    controlDiv.innerHTML = `
-        <div class="custom-current-btn" title="現在地を表示">
-            📍
-        </div>
-    `;
-
-    // ボタンがクリックされたときの処理
-    controlDiv.addEventListener("click", showCurrentLocation);
-
-    // 地図の右下に追加
-    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(controlDiv);
-}
-
-// ピンを追加する
-function placeMarker(location, address) {
-    const marker = new google.maps.Marker({
-        map: map,
-        position: location,
-        title: address,
-        icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-    });
-
-    const infoWindow = new google.maps.InfoWindow({
-        content: `
-            <div>
-                <p><strong>${address}</strong></p>
-                <button onclick="markDelivered(${markers.length})">配達完了</button>
-                <button onclick="markAbsent(${markers.length})">不在</button>
-            </div>
-        `
-    });
-
-    marker.addListener("click", function () {
-        infoWindow.open(map, marker);
-    });
-
-    markers.push({ marker, infoWindow });
-    map.setCenter(location);
-}
-
-// 配達完了 → ピン削除
-function markDelivered(index) {
-    const m = markers[index];
-    if (m) {
-        m.marker.setMap(null);
-        m.infoWindow.close();
+function setupAddressSearch() {
+  const input = document.getElementById("address-input");
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const address = input.value;
+      geocodeAddress(address);
     }
+  });
 }
 
-// 不在 → ピンをグレーに変更
-function markAbsent(index) {
-    const m = markers[index];
-    if (m) {
-        m.marker.setIcon("http://maps.google.com/mapfiles/ms/icons/gray-dot.png");
-        m.infoWindow.close();
-    }
-}
-let currentLocationMarker = null; // 現在地ピン用の変数
-
-function showCurrentLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-            const currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-
-            // 既存の現在地ピンを削除
-            if (currentLocationMarker) {
-                currentLocationMarker.setMap(null);
-            }
-
-            // 新しい現在地ピンを作成
-            currentLocationMarker = new google.maps.Marker({
-                position: currentPos,
-                map,
-                title: "現在地",
-                icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
-            });
-
-            const infoWindow = new google.maps.InfoWindow({ content: "<strong>現在地</strong>" });
-            currentLocationMarker.addListener("click", () => infoWindow.open(map, currentLocationMarker));
-
-            map.setCenter(currentPos);
-            map.setZoom(15);
-        }, () => {
-            alert("位置情報の取得に失敗しました。ブラウザの設定を確認してください。");
-        });
+function geocodeAddress(address) {
+  const geocoder = new google.maps.Geocoder();
+  geocoder.geocode({ address }, (results, status) => {
+    if (status === "OK") {
+      const location = results[0].geometry.location;
+      promptAndPlaceMarker(location, address);
     } else {
-        alert("このブラウザは位置情報をサポートしていません。");
+      alert("住所が見つかりません: " + status);
     }
+  });
 }
+
+function setupMapDoubleClick() {
+  map.addListener("dblclick", (e) => {
+    const location = e.latLng;
+    const address = `指定位置（${location.lat().toFixed(5)}, ${location.lng().toFixed(5)}）`;
+    promptAndPlaceMarker(location, address);
+  });
+}
+
+function promptAndPlaceMarker(location, address) {
+  const memo = prompt("この地点のメモを入力してください（空でもOK）:") || "";
+  placeMarker(location, address, memo);
+}
+
+function placeMarker(location, address, memo = "") {
+  const marker = new google.maps.Marker({
+    position: location,
+    map,
+    icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+    title: address,
+  });
+
+  const index = markers.length;
+  const infoWindow = new google.maps.InfoWindow({
+    content: generateInfoContent(index, address, memo),
+  });
+
+  marker.addListener("click", () => {
+    infoWindow.open(map, marker);
+  });
+
+  markers.push({ marker, infoWindow, memo });
+  map.setCenter(location);
+}
+
+function generateInfoContent(index, address, memo) {
+  return `
+    <div>
+      <p><strong>${address}</strong></p>
+      <textarea id="memo-${index}" rows="3" style="width: 100%;">${memo}</textarea>
+      <br />
+      <button onclick="saveMemo(${index})">メモを保存</button>
+      <button onclick="deleteMarker(${index})">削除</button>
+    </div>
+  `;
+}
+
+function saveMemo(index) {
+  const item = markers[index];
+  const textarea = document.getElementById(`memo-${index}`);
+  if (item && textarea) {
+    item.memo = textarea.value;
+    item.infoWindow.setContent(generateInfoContent(index, item.marker.getTitle(), item.memo));
+  }
+}
+
+function deleteMarker(index) {
+  const item = markers[index];
+  if (item) {
+    item.marker.setMap(null);
+    item.infoWindow.close();
+  }
+}
+
