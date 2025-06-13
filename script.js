@@ -36,11 +36,18 @@ function geocodeAddress(address) {
   });
 }
 
-function setupMapDoubleClick() {
-  map.addListener("dblclick", (e) => {
-    const location = e.latLng;
-    const address = `指定位置（${location.lat().toFixed(5)}, ${location.lng().toFixed(5)}）`;
-    promptAndPlaceMarker(location, address);
+function setupMapLongPress() {
+  let pressTimer;
+  map.addListener("mousedown", (e) => {
+    pressTimer = setTimeout(() => {
+      const location = e.latLng;
+      const address = `指定位置（${location.lat().toFixed(5)}, ${location.lng().toFixed(5)}）`;
+      promptAndPlaceMarker(location, address);
+    }, 1000);  // 1秒間の長押しを検出
+  });
+
+  map.addListener("mouseup", () => {
+    clearTimeout(pressTimer);  // 長押しが解除された場合
   });
 }
 
