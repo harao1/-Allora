@@ -10,7 +10,8 @@ function initMap() {
   console.log("map読み込み")
 
   setupAddressSearch();
-  setupMapDoubleClick();
+  setupMapLongPress();
+  // setupMapDoubleClick();
 }
 
 function setupAddressSearch() {
@@ -50,6 +51,14 @@ function setupMapLongPress() {
     clearTimeout(pressTimer);  // 長押しが解除された場合
   });
 }
+
+// function setupMapDoubleClick() {
+//   map.addListener("dblclick", (e) => {
+//     const location = e.latLng;
+//     const address = `指定位置（${location.lat().toFixed(5)}, ${location.lng().toFixed(5)}）`;
+//     promptAndPlaceMarker(location, address);
+//   });
+// }
 
 function promptAndPlaceMarker(location, address) {
   const memo = prompt("この地点のメモを入力してください（空でもOK）:") || "";
@@ -105,4 +114,3 @@ function deleteMarker(index) {
     item.infoWindow.close();
   }
 }
-
