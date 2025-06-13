@@ -36,3 +36,9 @@ input[type="text"] {
 .custom-current-btn:hover {
     background: #f0f0f0;
 }
+
+#address-input {
+    width: 300px;
+    padding: 8px;
+    margin: 10px;
+}
